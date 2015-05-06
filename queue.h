@@ -62,7 +62,7 @@ typedef struct queue_handle {
 	} while (0)
 
 #define QUEUE_SIZE(queue)													\
-	(!(queue) ? queue->qh.q->size : 0U)
+	((queue) ? queue->qh.q->size : 0U)
 
 #define QUEUE_FREE(queue)													\
 	do {																	\

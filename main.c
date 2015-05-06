@@ -19,6 +19,8 @@ int main(void) {
 	test_data[2].content = "ghi";
 	test_data[3].content = "jkl";
 
+	printf("--%d--\n", QUEUE_SIZE(msgs));
+
 	for (i = 0; i < 2; i++) {
 		printf("msg addr: %p\n", &test_data[i]);
 		QUEUE_PUSH(msgs, &test_data[i]);
@@ -26,7 +28,7 @@ int main(void) {
 			   "frontqh: %p, backqh: %p\n",
 					msgs->qh.q->front,
 					msgs->qh.q->back,
-					msgs->qh.q->size,
+					QUEUE_SIZE(msgs),
 					(queue_handle_t *)(msgs->qh.q->frontqh),
 					(queue_handle_t *)(msgs->qh.q->backqh));
 	}
