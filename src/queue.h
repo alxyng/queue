@@ -42,7 +42,7 @@ typedef struct queue_handle {
 			/* set the new backs queue handle to backqh */					\
 			backqh = &((element)->qh);										\
 																			\
-			/* set the queues backqh to the new elements queue handle */	\
+			/* set the queue's backqh to the new elements queue handle */	\
 			q->backqh = backqh;												\
 		}																	\
 		(queue)->qh.q->size++;												\
