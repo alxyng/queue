@@ -4,7 +4,7 @@ A type-agnostic header-only macro-based struct queue implementation in C.
 
 ## Usage
 
-To create a queueable struct, include the `queue_handle_t qh` member in your
+To create a queueable struct, include the `queue_handle qh` member in your
 struct.
 
 Before using QUEUE_PUSH, ensure that the queue struct is set to NULL, this is
@@ -17,35 +17,36 @@ dynamically allocated. This has to be done by popping all the elements in the
 queue and freeing them manually.
 
 Pushing the same element (at the same address) into the queue is not supported.
-This is because the 'next' member of the queue's queue_handle will be
+This is because the `next` member of the queue's `queue_handle` will be
 overwitten. This will case undefined behaviour when pushing or popping to or
 from the queue (see commented out test case).
 
 ```c
+#include <stdlib.h>
 #include <stdio.h>
 #include "queue.h"
 
 struct msg {
 	char *content;
 	queue_handle qh;
-}
+};
 
 int main(void) {
-	struct msg *queue;
-	struct msg m1, m2;
+	struct msg *msgs; // message queue
+	struct msg m1, *m2;
 
-	queue = NULL;
+	msgs = NULL;
 
 	m1.content = "abc";
-	QUEUE_PUSH(queue, &m1);
+	QUEUE_PUSH(msgs, &m1);
 
-	printf("queue size: %d\n", QUEUE_SIZE(queue)); // queue size: 1
+	printf("msgs size: %d\n", QUEUE_SIZE(msgs)); // msgs size: 1
 
-	QUEUE_POP(queue, &m2);
-	printf("m2 content: %s\n", m2.content); // m2 content: abc
+	QUEUE_POP(msgs, m2);
+	printf("m2 content: %s\n", m2->content); // m2 content: abc
 
-	QUEUE_FREE(queue);
+	QUEUE_FREE(msgs);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 ```

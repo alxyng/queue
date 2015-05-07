@@ -37,8 +37,7 @@ START_TEST(test_queue_push) {
 	ck_assert(msgs->qh.q->front == &m);
 	ck_assert(msgs->qh.q->front == msgs->qh.q->back);
 
-	ck_assert(msgs->qh.q->frontqh == &m.qh);
-	ck_assert(msgs->qh.q->frontqh == msgs->qh.q->backqh);
+	ck_assert(msgs->qh.q->backqh == &((struct msg *)msgs->qh.q->back)->qh);
 
 	ck_assert_int_eq(msgs->qh.q->size, 1);
 	ck_assert(msgs->qh.next == NULL);
@@ -79,7 +78,6 @@ START_TEST(test_queue_push_2) {
 	ck_assert(msgs->qh.q == m2->qh.q);
 
 	ck_assert(msgs->qh.q->front == &m1);
-	ck_assert(msgs->qh.q->frontqh == &m1.qh);
 
 	ck_assert(m1.qh.next == m2);
 	ck_assert(m2->qh.next == NULL);
@@ -123,7 +121,6 @@ START_TEST(test_queue_push_5) {
 	ck_assert(msgs->qh.q == m5.qh.q);
 
 	ck_assert(msgs->qh.q->front == &m1);
-	ck_assert(msgs->qh.q->frontqh == &m1.qh);
 
 	ck_assert(m1.qh.next == m2);
 	ck_assert(m2->qh.next == m3);
@@ -259,7 +256,6 @@ START_TEST(test_queue_push_push_pop_same_element) {
 	ck_assert(msgs->qh.q == src2->qh.q);
 
 	ck_assert(msgs->qh.q->front == &src1);
-	ck_assert(msgs->qh.q->frontqh == &src1.qh);
 	ck_assert(msgs->qh.q->back == src2);
 	ck_assert(msgs->qh.q->backqh == &src2->qh);
 

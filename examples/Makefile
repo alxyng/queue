@@ -1,3 +1,6 @@
-default:
+CC = gcc
+STD = -std=c99
+CFLAGS = $(STD) -I ../src
 
-.PHONY: default
+simple.out: simple.c ../src/queue.h
+	$(CC) $(CFLAGS) simple.c -o simple.out
