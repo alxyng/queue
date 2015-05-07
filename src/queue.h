@@ -6,17 +6,15 @@
 typedef struct {
 	void *front;
 	void *back;
-
-	void *frontqh;
+	void *frontqh; // TODO: remove?
 	void *backqh;
-
 	unsigned int size;
 } queue_t;
 
 typedef struct queue_handle {
 	queue_t *q;
 	void *next;
-} queue_handle_t;
+} queue_handle;
 
 #define QUEUE_PUSH(queue, element)											\
 	do {																	\
@@ -31,8 +29,7 @@ typedef struct queue_handle {
 			(queue) = (element);											\
 		} else {															\
 			queue_t *q = (queue)->qh.q;										\
-			queue_handle_t *backqh = q->backqh;								\
-			queue_handle_t *frontqh = q->frontqh;							\
+			queue_handle *backqh = q->backqh;								\
 																			\
 			(element)->qh.q = q;											\
 			(element)->qh.next = NULL;										\
@@ -43,8 +40,6 @@ typedef struct queue_handle {
 			backqh = &((element)->qh);										\
 																			\
 			q->backqh = backqh;												\
-			q->frontqh = frontqh;											\
-																			\
 		}																	\
 		(queue)->qh.q->size++;												\
 	} while (0)
@@ -66,7 +61,9 @@ typedef struct queue_handle {
 
 #define QUEUE_FREE(queue)													\
 	do {																	\
-		free(queue->qh.q);													\
+		if (queue && queue->qh.q) {											\
+			free(queue->qh.q);												\
+		}																	\
 	} while (0)
 
 #endif /* QUEUE_H_ */

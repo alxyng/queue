@@ -1,5 +1,9 @@
-main: main.c queue.h
-	gcc -std=c99 main.c -o main
+default: check examples
 
-clean:
-	rm main
+check:
+	$(MAKE) -C tests $@
+
+examples:
+	$(MAKE) -C examples
+
+.PHONY: default check examples

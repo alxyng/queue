@@ -4,13 +4,22 @@ A type-agnostic header-only macro-based struct queue implementation in C.
 
 ## Usage
 
-To create a queueable struct, include the `queue_handle_t qh` member in your struct.
+To create a queueable struct, include the `queue_handle_t qh` member in your
+struct.
 
-Before using QUEUE_PUSH, ensure that the queue struct is set to NULL, this is the only initialisation that needs to be done.
+Before using QUEUE_PUSH, ensure that the queue struct is set to NULL, this is
+the only initialisation that needs to be done.
 
 This queue implementation is not thread safe.
 
-Freeing the queue does not free every element in the queue if they have been dynamically allocated. This has to be done by popping all the elements in the queue and freeing them manually.
+Freeing the queue does not free every element in the queue if they have been
+dynamically allocated. This has to be done by popping all the elements in the
+queue and freeing them manually.
+
+Pushing the same element (at the same address) into the queue is not supported.
+This is because the 'next' member of the queue's queue_handle will be
+overwitten. This will case undefined behaviour when pushing or popping to or
+from the queue (see commented out test case).
 
 ```c
 #include <stdio.h>
@@ -18,11 +27,11 @@ Freeing the queue does not free every element in the queue if they have been dyn
 
 struct msg {
 	char *content;
-	queue_handle_t qh;
+	queue_handle qh;
 }
 
 int main(void) {
-	struct msgs *queue;
+	struct msg *queue;
 	struct msg m1, m2;
 
 	queue = NULL;
