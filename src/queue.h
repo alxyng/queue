@@ -1,7 +1,7 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
-#include <stdlib.h> /* malloc, free */
+#include <stdlib.h>
 #include <pthread.h>
 
 typedef struct {
@@ -17,21 +17,6 @@ typedef struct queue_handle {
 	queue_core *qc;
 	void *next;
 } queue_handle;
-
-/*
-pthread_mutex_lock(&queue_mutex);
-while (QUEUE_SIZE(queue) == 0) {
-	pthread_cond_wait(&queue_cond, &queue_mutex);
-}
-QUEUE_POP(queue, client);
-pthread_mutex_unlock(&queue_mutex);
-
-
-pthread_mutex_lock(&queue_mutex);
-QUEUE_PUSH(queue, client);
-pthread_mutex_unlock(&queue_mutex);
-pthread_cond_signal(&queue_cond); // broadcast to all consumers??
-*/
 
 #define QUEUE_INIT(q)														\
 	do {																	\
@@ -53,14 +38,14 @@ pthread_cond_signal(&queue_cond); // broadcast to all consumers??
 			pthread_mutex_lock(&qc->mutex);									\
 			(e)->qh.qc = qc;												\
 			(e)->qh.next = NULL;											\
-			backqh = qc->backqh;													\
+			backqh = qc->backqh;											\
 			if (!qc->front) { /* empty queue */								\
 				qc->front = qc->back = (e);									\
 			} else { /* non-empty queue */									\
-				backqh->next = (e);										\
+				backqh->next = (e);											\
 				qc->back = (e);												\
 			}																\
-			backqh = &(e)->qh;											\
+			backqh = &(e)->qh;												\
 			qc->size++;														\
 			pthread_mutex_unlock(&qc->mutex);								\
 			pthread_cond_signal(&qc->cond); /* broadcast to all? */			\
@@ -85,8 +70,14 @@ pthread_cond_signal(&queue_cond); // broadcast to all consumers??
 		}																	\
 	} while (0)
 
+#define QUEUE_LOCK(q)														\
+	pthread_mutex_lock(&q->qh.qc->mutex);
+
 #define QUEUE_SIZE(q)														\
 	((q) ? (q)->qh.qc->size : 0U)
+
+#define QUEUE_UNLOCK(q)														\
+	pthread_mutex_unlock(&q->qh.qc->mutex);
 
 #define QUEUE_FREE(q)														\
 	do {																	\
