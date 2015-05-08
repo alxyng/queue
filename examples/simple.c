@@ -11,7 +11,8 @@ int main(void) {
 	struct msg *msgs; // message queue
 	struct msg m1, *m2;
 
-	msgs = NULL;
+	msgs = malloc(sizeof (struct msg));
+	QUEUE_INIT(msgs);
 
 	m1.content = "abc";
 	QUEUE_PUSH(msgs, &m1);
