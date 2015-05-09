@@ -20,11 +20,12 @@ typedef struct queue_handle {
 
 #define QUEUE_INIT(qt, q)													\
 	do {																	\
+		queue_core *qc;														\
 		(q) = malloc(sizeof (qt));											\
 		if (q) {															\
 			(q)->qh.qc = malloc(sizeof (queue_core));						\
 			if ((q)->qh.qc) {												\
-				queue_core *qc = (q)->qh.qc;								\
+				qc = (q)->qh.qc;											\
 				pthread_mutex_init(&qc->mutex, NULL);						\
 				pthread_cond_init(&qc->cond, NULL);							\
 				qc->front = qc->back = NULL;								\
@@ -40,8 +41,9 @@ typedef struct queue_handle {
 
 #define QUEUE_PUSH(q, e)													\
 	do {																	\
-		queue_core *qc = (q)->qh.qc;										\
+		queue_core *qc;														\
 		queue_handle *backqh;												\
+		qc = (q)->qh.qc;													\
 		pthread_mutex_lock(&qc->mutex);										\
 		(e)->qh.qc = qc;													\
 		(e)->qh.next = NULL;												\
@@ -61,8 +63,9 @@ typedef struct queue_handle {
 
 #define QUEUE_POP(q, e)														\
 	do {																	\
+		queue_core *qc;														\
 		(e) = NULL;															\
-		queue_core *qc = (q)->qh.qc;										\
+		qc = (q)->qh.qc;													\
 		pthread_mutex_lock(&qc->mutex);										\
 		while (QUEUE_SIZE(q) == 0) {										\
 			pthread_cond_wait(&qc->cond, &qc->mutex);						\
@@ -86,8 +89,9 @@ typedef struct queue_handle {
 
 #define QUEUE_FREE(q)														\
 	do {																	\
+		queue_core *qc;														\
 		if ((q) && (q)->qh.qc) {											\
-			queue_core *qc = (q)->qh.qc;									\
+			qc = (q)->qh.qc;												\
 			pthread_cond_destroy(&qc->cond);								\
 			pthread_mutex_destroy(&qc->mutex);								\
 			free(qc);														\
