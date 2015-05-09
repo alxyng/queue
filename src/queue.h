@@ -18,63 +18,68 @@ typedef struct queue_handle {
 	void *next;
 } queue_handle;
 
-#define QUEUE_INIT(q)														\
+#define QUEUE_INIT(qt, q)													\
 	do {																	\
-		(q)->qh.qc = malloc(sizeof (queue_core));							\
-		queue_core *qc = (q)->qh.qc;										\
-		pthread_mutex_init(&qc->mutex, NULL);								\
-		pthread_cond_init(&qc->cond, NULL);									\
-		qc->front = qc->back = NULL;										\
-		qc->backqh = NULL;													\
-		qc->size = 0;														\
-		(q)->qh.next = NULL;												\
+		(q) = malloc(sizeof (qt));											\
+		if (q) {															\
+			(q)->qh.qc = malloc(sizeof (queue_core));						\
+			if ((q)->qh.qc) {												\
+				queue_core *qc = (q)->qh.qc;								\
+				pthread_mutex_init(&qc->mutex, NULL);						\
+				pthread_cond_init(&qc->cond, NULL);							\
+				qc->front = qc->back = NULL;								\
+				qc->backqh = NULL;											\
+				qc->size = 0;												\
+				(q)->qh.next = NULL;										\
+			} else {														\
+				free(q);													\
+				(q) = NULL;													\
+			}																\
+		}																	\
 	} while (0)
 
 #define QUEUE_PUSH(q, e)													\
 	do {																	\
-		if (q && (q)->qh.qc) {												\
-			queue_core *qc = (q)->qh.qc;									\
-			queue_handle *backqh;											\
-			pthread_mutex_lock(&qc->mutex);									\
-			(e)->qh.qc = qc;												\
-			(e)->qh.next = NULL;											\
-			backqh = qc->backqh;											\
-			if (!qc->front) { /* empty queue */								\
-				qc->front = qc->back = (e);									\
-			} else { /* non-empty queue */									\
-				backqh->next = (e);											\
-				qc->back = (e);												\
-			}																\
-			backqh = &(e)->qh;												\
-			qc->size++;														\
-			pthread_mutex_unlock(&qc->mutex);								\
-			pthread_cond_signal(&qc->cond); /* broadcast to all? */			\
+		queue_core *qc = (q)->qh.qc;										\
+		queue_handle *backqh;												\
+		pthread_mutex_lock(&qc->mutex);										\
+		(e)->qh.qc = qc;													\
+		(e)->qh.next = NULL;												\
+		backqh = qc->backqh;												\
+		if (!qc->front) { /* empty queue */									\
+			qc->front = qc->back = (e);										\
+		} else { /* non-empty queue */										\
+			backqh->next = (e);												\
+			qc->back = (e);													\
 		}																	\
+		backqh = &((e)->qh);												\
+		qc->backqh = backqh;												\
+		qc->size++;															\
+		pthread_mutex_unlock(&qc->mutex);									\
+		pthread_cond_signal(&qc->cond); /* broadcast to all? */				\
 	} while (0)
 
 #define QUEUE_POP(q, e)														\
 	do {																	\
 		(e) = NULL;															\
-		if (q && (q)->qh.qc) {												\
-			queue_core *qc = (q)->qh.qc;									\
-			pthread_mutex_lock(&qc->mutex);									\
-			while (QUEUE_SIZE(q) == 0) {									\
-				pthread_cond_wait(&qc->cond, &qc->mutex);					\
-			}																\
-			if ((q)->qh.qc->front != NULL) {								\
-				(e) = (q)->qh.qc->front;									\
-				(q)->qh.qc->front = (e)->qh.next;							\
-				(q)->qh.qc->size--;											\
-			}																\
-			pthread_mutex_unlock(&qc->mutex);								\
+		queue_core *qc = (q)->qh.qc;										\
+		pthread_mutex_lock(&qc->mutex);										\
+		while (QUEUE_SIZE(q) == 0) {										\
+			pthread_cond_wait(&qc->cond, &qc->mutex);						\
 		}																	\
+		if ((q)->qh.qc->front != NULL) {									\
+			(e) = (q)->qh.qc->front;										\
+			(q)->qh.qc->front = (e)->qh.next;								\
+			(q)->qh.qc->size--;												\
+		}																	\
+		pthread_mutex_unlock(&qc->mutex);									\
 	} while (0)
 
 #define QUEUE_LOCK(q)														\
 	pthread_mutex_lock(&q->qh.qc->mutex);
 
 #define QUEUE_SIZE(q)														\
-	((q) ? (q)->qh.qc->size : 0U)
+	((q)->qh.qc->size)
 
 #define QUEUE_UNLOCK(q)														\
 	pthread_mutex_unlock(&q->qh.qc->mutex);
@@ -86,6 +91,7 @@ typedef struct queue_handle {
 			pthread_cond_destroy(&qc->cond);								\
 			pthread_mutex_destroy(&qc->mutex);								\
 			free(qc);														\
+			free(q);														\
 		}																	\
 	} while (0)
 
